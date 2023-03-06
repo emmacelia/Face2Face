@@ -7,7 +7,7 @@ import {
   SafeAreaView,
   TouchableOpacity,
 } from 'react-native';
-import NfcManager, {NfcEvents, NfcTech} from 'react-native-nfc-manager';
+import NfcManager, {Ndef, NfcEvents, NfcTech} from 'react-native-nfc-manager';
 
 function App(props) {
   // State gets updated when when we find out if the device supports NFC
@@ -23,6 +23,7 @@ function App(props) {
       if (deviceIsSupported) {
         // Initialize NFC module
         await NfcManager.start();
+        console.warn('NFC supported');
       }
     };
 
@@ -42,15 +43,29 @@ function App(props) {
     };
   }, []);
 
-  const readTag = async () => {
-    // begin detecting NFC tags
-    await NfcManager.registerTagEvent();
-  };
+  async function readNdef() {
+    try {
+      // register for the NFC tag with NDEF in it
+      await NfcManager.requestTechnology(NfcTech.Ndef);
+      // the resolved tag object will contain 'ndefMessage' property
+      const tag = await NfcManager.getTag();
+      console.warn('Tag found: ' + tag);
+    } catch (ex) {
+      console.warn('Oops!', ex);
+    } finally {
+      NfcManager.cancelTechnologyRequest(); 
+    }
+  }
 
-  const cancelReadTag = async () => {
-    // stop scanning
-    await NfcManager.unregisterTagEvent();
-  };
+  // const readTag = async () => {
+  //   // begin detecting NFC tags
+  //   await NfcManager.registerTagEvent();
+  // };
+
+  // const cancelReadTag = async () => {
+  //   // stop scanning
+  //   await NfcManager.unregisterTagEvent();
+  // };
 
   // error handling
   if (hasNfc === null) return null;
@@ -94,14 +109,14 @@ function App(props) {
   return (
     <SafeAreaView style={styles.wrapper}>
       <Text>Hello Face2Face</Text>
-      <TouchableOpacity style={[styles.btn, styles.btnScan]} onPress={readTag}>
+      <TouchableOpacity style={[styles.btn, styles.btnScan]} onPress={readNdef}>
         <Text style={{color: 'white'}}>Scan Tag</Text>
       </TouchableOpacity>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         style={[styles.btn, styles.btnCancel]}
         onPress={cancelReadTag}>
         <Text style={{color: 'white'}}>Cancel Scan</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       <TouchableOpacity
         style={[styles.btn, styles.btnWrite]}
         onPress={writeNFC}>
