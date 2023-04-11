@@ -22,6 +22,7 @@ import Timer from './components/Timer';
 function App(props) {
   let session;
   const [connection, setConnection] = useState(false);
+  const [score, setScore] = useState(0);
 
   //End the session if the app is in the background
   useEffect(() => {
@@ -58,8 +59,12 @@ function App(props) {
     await session.setEnabled(false).catch(error => error);
     setConnection(false);
     console.log('SESSION' + JSON.stringify(session));
+  };
 
-    // TODO: Read timer value and add to the score
+  // Gets called when the session is closed, saves the value of the timer
+  const getScoreValue = yourvalue => {
+    console.log(yourvalue);
+    setScore(score + yourvalue);
   };
 
   // Reading
@@ -155,8 +160,9 @@ function App(props) {
         <ButtonText name="DELETE" />
       </TouchableOpacity>
       <AppText>{content}</AppText>
+      <AppText>{score}</AppText>
       <Text>
-        <Timer connection={connection} />
+        <Timer connection={connection} getScoreValue={getScoreValue} />
       </Text>
     </SafeAreaView>
   );

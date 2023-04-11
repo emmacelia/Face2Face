@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Text, View} from 'react-native';
 
-const Timer = props => {
+const Timer = (props) => {
   const [time, setTime] = useState(0);
 
   useEffect(() => {
@@ -11,6 +11,8 @@ const Timer = props => {
         setTime(prevTime => prevTime + 1);
       }, 1000);
     } else {
+      props.getScoreValue(time);
+      console.log(time);
       setTime(0);
     }
     return () => clearInterval(intervalId);
