@@ -133,6 +133,11 @@ const getData = () =>{
         <Timer connection={connection} getScoreValue={getScoreValue} />
       </Text>
 
+ <TouchableOpacity
+        style={[styles.btn, styles.btnWrite]}
+        onPress={setData}>
+        <Text style={{color: 'white'}}>Save Final Score</Text>
+      </TouchableOpacity>
 
     </SafeAreaView>
   );
