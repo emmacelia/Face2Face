@@ -10,7 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
-    "@react-native-async-storage/async-storage": "^1.18.1",
+    "@react-native-async-storage/async-storage": "github:react-native-async-storage/async-storage",
     "react": "18.2.0",
     "react-native": "0.71.4",
     "react-native-fs": "^2.20.0",

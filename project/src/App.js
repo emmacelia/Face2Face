@@ -4,7 +4,6 @@ import {
   TextInput,
   StyleSheet,
   SafeAreaView,
-  AsyncStorage,
   TouchableOpacity,
   Button,
   AppState,
@@ -18,16 +17,18 @@ import * as RNFS from 'react-native-fs';
 import AppText from './components/AppText';
 import ButtonText from './components/ButtonText';
 import Timer from './components/Timer';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 function App(props) {
   let session;
   const [connection, setConnection] = useState(false);
-  const [score, setScore] = useState(0);
+  const [score, setScore] = useState();
+ 
 
   //End the session if the app is in the background
   useEffect(() => {
+    getData();
     AppState.addEventListener('change', handleAppStateChange);
-
     return () => {
       AppState.removeEventListener('change', handleAppStateChange);
     };
@@ -39,7 +40,35 @@ function App(props) {
     }
   };
 
-  // HCE host
+//Async Storage code 
+
+const setData= async ()=>{
+  try {
+    await AsyncStorage.setItem('score',JSON.stringify(score));
+    console.log("Saved" + score);
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+const getData = () =>{
+  try {
+     AsyncStorage.getItem('score',score)
+    .then(value =>{
+
+      if(value != null){
+        let UserScore = JSON.parse(value);
+        setScore(UserScore);
+        console.log("User Score" +UserScore);
+      }
+    })
+    console.log("Saved");
+  } catch (error) {
+    console.log("no data");
+  }
+}
+
+  // HCE hosts
   const startSession = async () => {
     const tag = new NFCTagType4({
       type: NFCTagType4NDEFContentType.Text,
@@ -55,6 +84,8 @@ function App(props) {
   };
 
   const stopSession = async () => {
+
+    setData();
     session = await HCESession.getInstance();
     await session.setEnabled(false).catch(error => error);
     setConnection(false);
@@ -65,6 +96,7 @@ function App(props) {
   const getScoreValue = yourvalue => {
     console.log(yourvalue);
     setScore(score + yourvalue);
+   // console.log("Get score: "+score);
   };
 
   // Reading
@@ -76,56 +108,13 @@ function App(props) {
     // to remove the listener:
     removeListener();
   };
-  //Variable to get data using use state
-  const [Username, setUsername] = React.useState('Test');
-  const [User, setUser] = useState({Username: 'Ema', score: 400});
-  //click method for button to update
-  const UpdateUsernameClick = () => {
-    setUsername('Conor');
-  };
-
-  const [content, setContent] = useState(null);
-  const writeFile = () => {
-    var path = RNFS.DocumentDirectoryPath + '/test.txt';
-    RNFS.writeFile(path, Username, 'utf8')
-      .then(() => console.log('FILE WRITTEN!'))
-      .catch(err => console.log(err.message));
-  };
-  const readFile = () => {
-    RNFS.readDir(RNFS.DocumentDirectoryPath)
-      .then(result => {
-        console.log('GOT RESULT', result);
-        return Promise.all([RNFS.stat(result[0].path), result[0].path]);
-      })
-      .then(statResult => {
-        if (statResult[0].isFile()) {
-          return RNFS.readFile(statResult[1], 'utf8');
-        }
-        return 'no file';
-      })
-      .then(contents => {
-        setContent(contents);
-        console.log(contents);
-      })
-      .catch(err => {
-        console.log(err.message, err.code);
-      });
-  };
-  const deleteFile = () => {
-    var path = RNFS.DocumentDirectoryPath + '/test.txt';
-    return RNFS.unlink(path)
-      .then(() => {
-        console.log('FILE DELETED');
-        setContent(null);
-      })
-      .catch(err => {
-        console.log(err.message);
-      });
-  };
 
   // Rendering for NFC compatible devices
   return (
+
+    
     <SafeAreaView style={styles.wrapper}>
+       <AppText> your score is: {score}</AppText>
       <Text>Hello Face2Face</Text>
       {/* <TouchableOpacity style={[styles.btn, styles.btnScan]} onPress={listen}>
         <Text style={{color: 'white'}}>Join Session</Text>
@@ -140,30 +129,11 @@ function App(props) {
         onPress={stopSession}>
         <Text style={{color: 'white'}}>Close Session</Text>
       </TouchableOpacity>
-
-      <TextInput
-        placeholder="Enter text here"
-        onChangeText={val => setUsername(val)}></TextInput>
-
-      <Text>This is {Username} </Text>
-      <Text>
-        Your username is {User.Username} and score is {User.score}{' '}
-      </Text>
-
-      <TouchableOpacity onPress={writeFile} style={styles.buttonStyle}>
-        <ButtonText name="WRITE" />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={readFile} style={styles.buttonStyle}>
-        <ButtonText name="READ" />
-      </TouchableOpacity>
-      <TouchableOpacity onPress={deleteFile} style={styles.buttonStyle}>
-        <ButtonText name="DELETE" />
-      </TouchableOpacity>
-      <AppText>{content}</AppText>
-      <AppText>{score}</AppText>
       <Text>
         <Timer connection={connection} getScoreValue={getScoreValue} />
       </Text>
+
+
     </SafeAreaView>
   );
 }
